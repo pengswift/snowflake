@@ -14,12 +14,14 @@ const (
 	port = ":50051"
 )
 
-type server struct {
-	factory *guid.GuidFactory
-}
+var (
+	factory = &guid.GuidFactory{}
+)
+
+type server struct{}
 
 func (s *server) GetGUID(ctx context.Context, in *pb.SnowflakeRequest) (*pb.SnowflakeResponse, error) {
-	id, err := s.factory.NewGUID(in.WorkerID)
+	id, err := factory.NewGUID(in.WorkerID)
 	return &pb.SnowflakeResponse{Guid: int64(id)}, err
 }
 
@@ -29,6 +31,6 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterSnowflakeServiceServer(s, &server{factory: &guid.GuidFactory{}})
+	pb.RegisterSnowflakeServiceServer(s, &server{})
 	s.Serve(lis)
 }
