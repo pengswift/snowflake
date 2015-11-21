@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package snowflake;
+
+message SnowflakeRequest {
+    int64 workerID = 1;
+}
+
+message SnowflakeResponse {
+    int64 guid = 1;
+}
+
+service SnowflakeService {
+    rpc GetGUID(SnowflakeRequest) returns (SnowflakeResponse);
+}
