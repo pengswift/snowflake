@@ -2,10 +2,10 @@ package main
 
 import (
 	"log"
+	"net"
 
 	"github.com/pengswift/internal/guid"
 	pb "github.com/pengswift/snowflake/snowflake"
-
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -14,13 +14,13 @@ const (
 	port = ":50051"
 )
 
-type server struct{}
+type server struct {
+	factory *guid.GuidFactory
+}
 
 func (s *server) GetGUID(ctx context.Context, in *pb.SnowflakeRequest) (*pb.SnowflakeResponse, error) {
-	factory := &guidFactory{}
-	id, err := factory.NewGUID(in.workerID)
-
-	return &pb.SnowflakeResponse{Guid: id}, nil
+	id, err := s.factory.NewGUID(in.WorkerID)
+	return &pb.SnowflakeResponse{Guid: int64(id)}, err
 }
 
 func main() {
@@ -29,6 +29,6 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterSnowflakeServiceServer(s, &server{})
+	pb.RegisterSnowflakeServiceServer(s, &server{factory: &guid.GuidFactory{}})
 	s.Serve(lis)
 }
